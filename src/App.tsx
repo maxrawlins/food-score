@@ -61,6 +61,32 @@ function scoreInfo(score: number | null) {
   return { color: "#dc2626", label: "Ultra processed", glow: "rgba(239,68,68,0.32)" };
 }
 
+function formatFacts(p: Product) {
+  const items: Array<{ k: string; v: string }> = [];
+
+  // Avoid duplicates: show additives OR ingredients count if available, both are useful but not repeated elsewhere
+  items.push({
+    k: "Additives",
+    v: String(p.additivesCount),
+  });
+
+  if (p.ingredientCount != null) {
+    items.push({
+      k: "Ingredients",
+      v: `~${p.ingredientCount}`,
+    });
+  }
+
+  if (p.brands) {
+    items.push({
+      k: "Brand",
+      v: p.brands,
+    });
+  }
+
+  return items;
+}
+
 export default function App() {
   const [barcode, setBarcode] = useState("");
   const [product, setProduct] = useState<Product | null>(null);
@@ -132,19 +158,15 @@ export default function App() {
     return null;
   }, [product]);
 
+  const facts = useMemo(() => (product ? formatFacts(product) : []), [product]);
+
   return (
     <div className="fs-wrap">
-      <div className="fs-topbar">
-        <div className="fs-brand">
-          <div className="fs-logo" />
-          <div>
-            <h1 className="fs-title">Food Score</h1>
-            <p className="fs-subtitle">Scan or type a barcode to score processing.</p>
-          </div>
-        </div>
-
-        <div className="fs-pill">Mobile-first · Fast</div>
-      </div>
+      {/* ✅ Simple top-left page title */}
+      <header className="fs-header">
+        <h1 className="fs-pageTitle">Food Score</h1>
+        <p className="fs-pageSubtitle">Scan or type a barcode to score processing.</p>
+      </header>
 
       <div className="fs-card fs-card-pad">
         <div className="fs-actions">
@@ -170,11 +192,7 @@ export default function App() {
             placeholder="Enter barcode (e.g. 737628064502)"
           />
 
-          <button
-            className={`fs-btn fs-btnPrimary`}
-            onClick={() => lookup()}
-            disabled={loading}
-          >
+          <button className="fs-btn fs-btnPrimary" onClick={() => lookup()} disabled={loading}>
             {loading ? "Looking up…" : "Lookup"}
           </button>
         </div>
@@ -183,35 +201,40 @@ export default function App() {
       </div>
 
       {product && (
-        <div className="fs-card fs-card-pad" style={{ marginTop: 14 }}>
+        <div className="fs-card fs-card-pad fs-resultCard">
           <div className="fs-resultHeader">
+            {/* ✅ Left: score + label */}
             <div className="fs-scoreWrap">
-              <div className="fs-scoreRow">
-                <div
-                  className="fs-score fs-glow"
-                  style={
-                    {
-                      color: scoreMeta.color,
-                      ["--glow" as any]: scoreMeta.glow,
-                    } as React.CSSProperties
-                  }
-                >
-                  {scoreDisplay ?? "—"}
-                </div>
+              <div
+                className="fs-score fs-glow"
+                style={
+                  {
+                    color: scoreMeta.color,
+                    ["--glow" as any]: scoreMeta.glow,
+                  } as React.CSSProperties
+                }
+              >
+                {scoreDisplay ?? "—"}
+              </div>
 
-                <div className="fs-badge">
-                  {product.additivesCount} additive{product.additivesCount === 1 ? "" : "s"}
-                  {product.ingredientCount != null ? ` · ~${product.ingredientCount} ingredients` : ""}
-                </div>
+              <div className="fs-scoreMeta">
+                <div className="fs-label">{scoreMeta.label}</div>
+                <div className="fs-conf">{confidenceLabel(product.confidence)} confidence</div>
               </div>
             </div>
 
-            <div className="fs-metaRight">
-              <div className="fs-label">{scoreMeta.label}</div>
-              <div className="fs-conf">{confidenceLabel(product.confidence)} confidence</div>
+            {/* ✅ Right: small facts grid (no duplicates, better placement) */}
+            <div className="fs-facts">
+              {facts.map((f) => (
+                <div key={f.k} className="fs-fact">
+                  <div className="fs-factKey">{f.k}</div>
+                  <div className="fs-factVal">{f.v}</div>
+                </div>
+              ))}
             </div>
           </div>
 
+          {/* Reasons */}
           {reasons ? (
             <ul className="fs-reasons">
               {reasons.map((r) => (
@@ -230,8 +253,8 @@ export default function App() {
             <div>
               <div className="fs-prodName">{product.name ?? "Unknown product"}</div>
               <div className="fs-prodMeta">
-                <div><b>Brand:</b> {product.brands ?? "Unknown"}</div>
-                <div><b>Additives:</b> {product.additivesCount}</div>
+                {/* ✅ no duplicate "Additives" here now */}
+                <div><b>Barcode:</b> {product.barcode}</div>
               </div>
 
               {product.ingredientsText && (
@@ -253,7 +276,11 @@ export default function App() {
         <div className="fs-card fs-card-pad" style={{ marginTop: 14 }}>
           <div className="fs-row" style={{ justifyContent: "space-between" }}>
             <h3 className="fs-sectionTitle">Recent scans</h3>
-            <button className="fs-btn" style={{ width: "auto", padding: "10px 12px" }} onClick={() => setHistory([])}>
+            <button
+              className="fs-btn"
+              style={{ width: "auto", padding: "10px 12px" }}
+              onClick={() => setHistory([])}
+            >
               Clear
             </button>
           </div>

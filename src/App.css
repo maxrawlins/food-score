@@ -1,24 +1,13 @@
-/* App.css */
-
-/* Modern, clean font (no external setup needed) */
 :root{
   --bg0:#070A12;
   --bg1:#0B1022;
   --card: rgba(255,255,255,0.06);
-  --card2: rgba(255,255,255,0.085);
   --border: rgba(255,255,255,0.12);
   --text: rgba(255,255,255,0.92);
   --muted: rgba(255,255,255,0.65);
   --muted2: rgba(255,255,255,0.5);
-  --shadow: 0 20px 60px rgba(0,0,0,0.45);
   --shadow2: 0 10px 28px rgba(0,0,0,0.35);
   --radius: 22px;
-  --radius2: 16px;
-
-  --good: #16a34a;
-  --mid: #ca8a04;
-  --bad: #ea580c;
-  --ultra: #dc2626;
 
   --accentA: #7c3aed;
   --accentB: #06b6d4;
@@ -39,61 +28,41 @@ body{
                Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* ✅ prevents iOS weirdness */
+  overflow-x: hidden;
 }
 
-a { color: inherit; }
+#root{
+  min-height: 100vh;
+}
 
 .fs-wrap{
   max-width: 560px;
   margin: 0 auto;
-  padding: 18px 16px 48px;
+
+  /* ✅ iOS safe-area + ensures you can scroll back to the top */
+  padding:
+    calc(14px + env(safe-area-inset-top))
+    16px
+    calc(44px + env(safe-area-inset-bottom));
 }
 
-.fs-topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
+.fs-header{
   margin-bottom: 14px;
 }
 
-.fs-brand{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-
-.fs-logo{
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  background:
-    radial-gradient(14px 14px at 30% 35%, rgba(255,255,255,0.85), rgba(255,255,255,0.0)),
-    linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1));
-  box-shadow: 0 14px 40px rgba(124,58,237,0.30);
-}
-
-.fs-title{
-  font-size: 18px;
-  font-weight: 850;
-  letter-spacing: -0.02em;
+.fs-pageTitle{
   margin: 0;
+  font-size: 20px;
+  font-weight: 950;
+  letter-spacing: -0.03em;
 }
 
-.fs-subtitle{
-  margin: 2px 0 0;
+.fs-pageSubtitle{
+  margin: 6px 0 0;
   color: var(--muted);
   font-size: 13px;
-}
-
-.fs-pill{
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 12px;
 }
 
 .fs-card{
@@ -116,7 +85,7 @@ a { color: inherit; }
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.04);
   color: var(--text);
-  font-weight: 850;
+  font-weight: 900;
   font-size: 16px;
   padding: 14px 14px;
   border-radius: 18px;
@@ -138,8 +107,6 @@ a { color: inherit; }
   background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1));
   box-shadow: 0 18px 46px rgba(6,182,212,0.20), 0 18px 46px rgba(124,58,237,0.22);
 }
-.fs-btnPrimary:hover{ filter: brightness(1.02); }
-.fs-btnPrimary:disabled{ filter: grayscale(20%); }
 
 .fs-input{
   width: 100%;
@@ -151,7 +118,6 @@ a { color: inherit; }
   color: var(--text);
   outline: none;
 }
-
 .fs-input::placeholder{ color: rgba(255,255,255,0.42); }
 .fs-input:focus{
   border-color: rgba(6,182,212,0.55);
@@ -161,66 +127,49 @@ a { color: inherit; }
 .fs-error{
   margin-top: 12px;
   color: #ffb4b4;
-  font-weight: 750;
+  font-weight: 800;
   font-size: 13px;
 }
+
+/* ✅ Result layout */
+.fs-resultCard{ margin-top: 14px; }
 
 .fs-resultHeader{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
-  gap: 14px;
-  margin-bottom: 10px;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
 .fs-scoreWrap{
   display:flex;
-  flex-direction:column;
-  gap: 6px;
-}
-
-.fs-scoreRow{
-  display:flex;
-  align-items:baseline;
+  align-items:flex-start;
   gap: 12px;
 }
 
 .fs-score{
-  font-size: 46px;
+  font-size: 48px;
   font-weight: 950;
   letter-spacing: -0.04em;
   line-height: 1;
 }
 
-.fs-badge{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
-  color: var(--muted);
-  font-weight: 800;
-  font-size: 12px;
-}
-
-.fs-metaRight{
-  text-align:right;
+.fs-scoreMeta{
   display:flex;
   flex-direction:column;
-  align-items:flex-end;
   gap: 6px;
+  padding-top: 6px;
 }
 
 .fs-label{
-  font-weight: 900;
+  font-weight: 950;
   font-size: 14px;
-  color: var(--text);
 }
+
 .fs-conf{
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 850;
   font-size: 12px;
 }
 
@@ -238,8 +187,41 @@ a { color: inherit; }
   z-index: -1;
 }
 
+/* ✅ compact facts grid (replaces awkward additive badge) */
+.fs-facts{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  min-width: 210px;
+}
+
+.fs-fact{
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  border-radius: 16px;
+  padding: 10px 10px;
+}
+
+.fs-factKey{
+  color: var(--muted2);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.fs-factVal{
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .fs-reasons{
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   padding-left: 16px;
   color: var(--muted);
 }
@@ -257,12 +239,11 @@ a { color: inherit; }
   width: 92px;
   height: 92px;
   border-radius: 18px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.04);
   overflow:hidden;
   box-shadow: var(--shadow2);
 }
-
 .fs-thumb img{
   width: 100%;
   height: 100%;
@@ -272,7 +253,7 @@ a { color: inherit; }
 .fs-prodName{
   margin: 2px 0 6px;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 950;
   letter-spacing: -0.02em;
 }
 
@@ -287,10 +268,9 @@ a { color: inherit; }
   border-top: 1px solid rgba(255,255,255,0.10);
   padding-top: 12px;
 }
-
 .fs-details summary{
   cursor:pointer;
-  font-weight: 900;
+  font-weight: 950;
   color: var(--text);
   list-style: none;
 }
@@ -310,10 +290,6 @@ a { color: inherit; }
 }
 
 .fs-sectionTitle{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
   margin: 0;
   font-weight: 950;
   letter-spacing: -0.02em;
@@ -357,7 +333,7 @@ a { color: inherit; }
   object-fit:cover;
 }
 .fs-historyName{
-  font-weight: 900;
+  font-weight: 950;
   font-size: 13px;
   white-space: nowrap;
   overflow:hidden;
@@ -390,7 +366,6 @@ a { color: inherit; }
   opacity: .95;
 }
 
-@media (max-width: 380px){
-  .fs-wrap{ padding: 16px 14px 40px; }
-  .fs-score{ font-size: 42px; }
+@media (max-width: 420px){
+  .fs-facts{ min-width: 0; grid-template-columns: 1fr; }
 }

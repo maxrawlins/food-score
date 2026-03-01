@@ -13,6 +13,10 @@ export default function Scanner({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // ✅ Prevent iOS Safari scroll getting stuck after closing overlay
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     let cancelled = false;
 
     async function start() {
@@ -34,10 +38,7 @@ export default function Scanner({
 
             if (result) {
               const text = result.getText();
-
-              // Stop camera immediately
               controls.stop();
-
               onDetected(text);
             }
           }
@@ -57,6 +58,7 @@ export default function Scanner({
     return () => {
       cancelled = true;
       controlsRef.current?.stop();
+      document.body.style.overflow = prevOverflow; // ✅ restore
     };
   }, [onDetected]);
 
@@ -65,17 +67,15 @@ export default function Scanner({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.9)",
+        background: "rgba(0,0,0,0.92)",
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
-        padding: 14,
+        padding: `calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom))`,
         zIndex: 9999,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div style={{ color: "white", fontWeight: 800 }}>
-          Scan barcode
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ color: "white", fontWeight: 900 }}>Scan barcode</div>
 
         <button
           onClick={() => {
@@ -83,12 +83,12 @@ export default function Scanner({
             onClose();
           }}
           style={{
-            borderRadius: 12,
+            borderRadius: 14,
             padding: "10px 12px",
-            border: "1px solid rgba(255,255,255,0.3)",
-            background: "transparent",
+            border: "1px solid rgba(255,255,255,0.28)",
+            background: "rgba(255,255,255,0.06)",
             color: "white",
-            fontWeight: 800,
+            fontWeight: 900,
           }}
         >
           Close
@@ -103,12 +103,13 @@ export default function Scanner({
             maxWidth: 520,
             borderRadius: 18,
             background: "black",
+            border: "1px solid rgba(255,255,255,0.12)",
           }}
         />
       </div>
 
       {error && (
-        <div style={{ color: "#ffb4b4", fontWeight: 700 }}>
+        <div style={{ color: "#ffb4b4", fontWeight: 800 }}>
           {error}
         </div>
       )}
