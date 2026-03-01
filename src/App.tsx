@@ -53,6 +53,17 @@ function confidenceLabel(c: Confidence | null | undefined) {
   return "—";
 }
 
+/** ✅ UI-only mapping: score → color + label (does not affect backend or data) */
+function scoreInfo(score: number | null) {
+  if (score === null) return { color: "#888", label: "Unknown" };
+
+  if (score <= 25) return { color: "#16a34a", label: "Minimally processed" };
+  if (score <= 50) return { color: "#ca8a04", label: "Moderately processed" };
+  if (score <= 75) return { color: "#ea580c", label: "Processed" };
+
+  return { color: "#dc2626", label: "Ultra processed" };
+}
+
 export default function App() {
   const [barcode, setBarcode] = useState("");
   const [product, setProduct] = useState<Product | null>(null);
@@ -120,6 +131,8 @@ export default function App() {
     if (typeof product?.score === "number") return product.score;
     return null;
   }, [product]);
+
+  const scoreMeta = useMemo(() => scoreInfo(scoreDisplay), [scoreDisplay]);
 
   const reasons = useMemo(() => {
     if (Array.isArray(product?.reasons) && product.reasons.length > 0) return product.reasons;
@@ -208,12 +221,21 @@ export default function App() {
               marginBottom: 10,
             }}
           >
-            <div style={{ fontSize: 42, fontWeight: 900, lineHeight: 1 }}>
+            <div
+              style={{
+                fontSize: 42,
+                fontWeight: 900,
+                lineHeight: 1,
+                color: scoreMeta.color, // ✅ color
+              }}
+            >
               {scoreDisplay ?? "—"}
             </div>
 
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontWeight: 700 }}>Processing Score</div>
+              {/* ✅ label */}
+              <div style={{ fontWeight: 700 }}>{scoreMeta.label}</div>
+
               <div style={{ opacity: 0.75, fontWeight: 700 }}>
                 {confidenceLabel(product.confidence)} confidence
               </div>
