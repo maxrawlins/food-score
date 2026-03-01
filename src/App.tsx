@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
+import Scanner from "./Scanner";
 
 type Confidence = "high" | "medium" | "low";
 
@@ -57,6 +58,8 @@ export default function App() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [scanning, setScanning] = useState(false);
 
   // Load history once on first render
   const [history, setHistory] = useState<HistoryItem[]>(() => loadHistory());
@@ -128,11 +131,27 @@ export default function App() {
       <header style={{ marginBottom: 12 }}>
         <h1 style={{ fontSize: 22, margin: 0 }}>Food Score</h1>
         <p style={{ margin: "6px 0 0", opacity: 0.75 }}>
-          Enter a barcode to get a processing score (camera scan next).
+          Scan a barcode or type one to get a processing score.
         </p>
       </header>
 
       <div style={{ display: "grid", gap: 10 }}>
+        {/* ✅ Scan button */}
+        <button
+          onClick={() => setScanning(true)}
+          style={{
+            width: "100%",
+            padding: 16,
+            fontSize: 18,
+            borderRadius: 12,
+            border: "1px solid rgba(0,0,0,0.2)",
+            background: "white",
+            fontWeight: 900,
+          }}
+        >
+          Scan barcode
+        </button>
+
         <input
           value={barcode}
           onChange={(e) => setBarcode(e.target.value)}
@@ -354,6 +373,27 @@ export default function App() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* ✅ Scanner overlay */}
+      {scanning && (
+        <Scanner
+          onDetected={(code) => {
+            // Keep digits only (barcodes)
+            const digitsOnly = code.replace(/\D/g, "");
+            if (digitsOnly.length === 0) return;
+
+            // Tiny “success” haptic (mobile only)
+            try {
+              navigator.vibrate?.(50);
+            } catch {}
+
+            setBarcode(digitsOnly);
+            setScanning(false);
+            lookup(digitsOnly);
+          }}
+          onClose={() => setScanning(false)}
+        />
       )}
     </div>
   );
