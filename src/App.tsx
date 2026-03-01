@@ -53,15 +53,12 @@ function confidenceLabel(c: Confidence | null | undefined) {
   return "—";
 }
 
-/** ✅ UI-only mapping: score → color + label (does not affect backend or data) */
 function scoreInfo(score: number | null) {
-  if (score === null) return { color: "#888", label: "Unknown" };
-
-  if (score <= 25) return { color: "#16a34a", label: "Minimally processed" };
-  if (score <= 50) return { color: "#ca8a04", label: "Moderately processed" };
-  if (score <= 75) return { color: "#ea580c", label: "Processed" };
-
-  return { color: "#dc2626", label: "Ultra processed" };
+  if (score === null) return { color: "#888", label: "Unknown", glow: "rgba(255,255,255,0.2)" };
+  if (score <= 25) return { color: "#16a34a", label: "Minimally processed", glow: "rgba(34,197,94,0.35)" };
+  if (score <= 50) return { color: "#ca8a04", label: "Moderately processed", glow: "rgba(250,204,21,0.30)" };
+  if (score <= 75) return { color: "#ea580c", label: "Processed", glow: "rgba(249,115,22,0.32)" };
+  return { color: "#dc2626", label: "Ultra processed", glow: "rgba(239,68,68,0.32)" };
 }
 
 export default function App() {
@@ -69,13 +66,10 @@ export default function App() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [scanning, setScanning] = useState(false);
 
-  // Load history once on first render
   const [history, setHistory] = useState<HistoryItem[]>(() => loadHistory());
 
-  // Persist history whenever it changes
   useEffect(() => {
     saveHistory(history);
   }, [history]);
@@ -111,7 +105,6 @@ export default function App() {
         scannedAt: Date.now(),
       };
 
-      // Functional update avoids stale history bugs
       setHistory((prev) => {
         const next = [newItem, ...prev.filter((h) => h.barcode !== newItem.barcode)].slice(
           0,
@@ -140,275 +133,166 @@ export default function App() {
   }, [product]);
 
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", padding: 16 }}>
-      <header style={{ marginBottom: 12 }}>
-        <h1 style={{ fontSize: 22, margin: 0 }}>Food Score</h1>
-        <p style={{ margin: "6px 0 0", opacity: 0.75 }}>
-          Scan a barcode or type one to get a processing score.
-        </p>
-      </header>
+    <div className="fs-wrap">
+      <div className="fs-topbar">
+        <div className="fs-brand">
+          <div className="fs-logo" />
+          <div>
+            <h1 className="fs-title">Food Score</h1>
+            <p className="fs-subtitle">Scan or type a barcode to score processing.</p>
+          </div>
+        </div>
 
-      <div style={{ display: "grid", gap: 10 }}>
-        {/* ✅ Scan button */}
-        <button
-          onClick={() => setScanning(true)}
-          style={{
-            width: "100%",
-            padding: 16,
-            fontSize: 18,
-            borderRadius: 12,
-            border: "1px solid rgba(0,0,0,0.2)",
-            background: "white",
-            fontWeight: 900,
-          }}
-        >
-          Scan barcode
-        </button>
-
-        <input
-          value={barcode}
-          onChange={(e) => setBarcode(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") lookup();
-          }}
-          inputMode="numeric"
-          placeholder="Enter barcode (e.g. 737628064502)"
-          style={{
-            width: "100%",
-            padding: 14,
-            fontSize: 18,
-            borderRadius: 12,
-            border: "1px solid #ccc",
-          }}
-        />
-
-        <button
-          onClick={() => lookup()}
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: 16,
-            fontSize: 18,
-            borderRadius: 12,
-            border: "none",
-            background: loading ? "#333" : "#111",
-            color: "white",
-            opacity: loading ? 0.8 : 1,
-          }}
-        >
-          {loading ? "Looking up…" : "Lookup"}
-        </button>
+        <div className="fs-pill">Mobile-first · Fast</div>
       </div>
 
-      {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
+      <div className="fs-card fs-card-pad">
+        <div className="fs-actions">
+          <button className="fs-btn" onClick={() => setScanning(true)}>
+            <svg className="fs-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M7 3H5a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M17 21h2a2 2 0 0 0 2-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M4 12h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
+            </svg>
+            Scan barcode
+          </button>
+
+          <input
+            className="fs-input"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") lookup();
+            }}
+            inputMode="numeric"
+            placeholder="Enter barcode (e.g. 737628064502)"
+          />
+
+          <button
+            className={`fs-btn fs-btnPrimary`}
+            onClick={() => lookup()}
+            disabled={loading}
+          >
+            {loading ? "Looking up…" : "Lookup"}
+          </button>
+        </div>
+
+        {error && <div className="fs-error">{error}</div>}
+      </div>
 
       {product && (
-        <div
-          style={{
-            marginTop: 18,
-            padding: 16,
-            borderRadius: 16,
-            border: "1px solid #ddd",
-          }}
-        >
-          {/* Score header */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              gap: 12,
-              marginBottom: 10,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 42,
-                fontWeight: 900,
-                lineHeight: 1,
-                color: scoreMeta.color, // ✅ color
-              }}
-            >
-              {scoreDisplay ?? "—"}
+        <div className="fs-card fs-card-pad" style={{ marginTop: 14 }}>
+          <div className="fs-resultHeader">
+            <div className="fs-scoreWrap">
+              <div className="fs-scoreRow">
+                <div
+                  className="fs-score fs-glow"
+                  style={
+                    {
+                      color: scoreMeta.color,
+                      ["--glow" as any]: scoreMeta.glow,
+                    } as React.CSSProperties
+                  }
+                >
+                  {scoreDisplay ?? "—"}
+                </div>
+
+                <div className="fs-badge">
+                  {product.additivesCount} additive{product.additivesCount === 1 ? "" : "s"}
+                  {product.ingredientCount != null ? ` · ~${product.ingredientCount} ingredients` : ""}
+                </div>
+              </div>
             </div>
 
-            <div style={{ textAlign: "right" }}>
-              {/* ✅ label */}
-              <div style={{ fontWeight: 700 }}>{scoreMeta.label}</div>
-
-              <div style={{ opacity: 0.75, fontWeight: 700 }}>
-                {confidenceLabel(product.confidence)} confidence
-              </div>
+            <div className="fs-metaRight">
+              <div className="fs-label">{scoreMeta.label}</div>
+              <div className="fs-conf">{confidenceLabel(product.confidence)} confidence</div>
             </div>
           </div>
 
-          {/* Reasons */}
           {reasons ? (
-            <ul style={{ margin: "8px 0 14px", paddingLeft: 18 }}>
+            <ul className="fs-reasons">
               {reasons.map((r) => (
-                <li key={r} style={{ marginBottom: 6 }}>
-                  {r}
-                </li>
+                <li key={r}>{r}</li>
               ))}
             </ul>
           ) : (
-            <p style={{ margin: "8px 0 14px", opacity: 0.7 }}>
-              No reasons returned.
-            </p>
+            <div className="fs-footnote">No reasons returned.</div>
           )}
 
-          {/* Product */}
-          {product.imageUrl && (
-            <img
-              src={product.imageUrl}
-              alt=""
-              style={{ width: "100%", borderRadius: 12, marginBottom: 10 }}
-            />
-          )}
+          <div className="fs-product">
+            <div className="fs-thumb">
+              {product.imageUrl ? <img src={product.imageUrl} alt="" /> : null}
+            </div>
 
-          <h2 style={{ margin: "8px 0 6px" }}>
-            {product.name ?? "Unknown product"}
-          </h2>
+            <div>
+              <div className="fs-prodName">{product.name ?? "Unknown product"}</div>
+              <div className="fs-prodMeta">
+                <div><b>Brand:</b> {product.brands ?? "Unknown"}</div>
+                <div><b>Additives:</b> {product.additivesCount}</div>
+              </div>
 
-          <p style={{ margin: "6px 0" }}>
-            <b>Brand:</b> {product.brands ?? "Unknown"}
-          </p>
+              {product.ingredientsText && (
+                <details className="fs-details">
+                  <summary>Ingredients</summary>
+                  <p>{product.ingredientsText}</p>
+                </details>
+              )}
 
-          <p style={{ margin: "6px 0" }}>
-            <b>Additives:</b> {product.additivesCount}
-            {product.ingredientCount != null ? (
-              <>
-                {" "}
-                · <b>Ingredients:</b> ~{product.ingredientCount}
-              </>
-            ) : null}
-          </p>
-
-          {product.ingredientsText && (
-            <details style={{ marginTop: 10 }}>
-              <summary style={{ fontWeight: 700, cursor: "pointer" }}>
-                Ingredients
-              </summary>
-              <p style={{ fontSize: 14, lineHeight: 1.5, marginTop: 8 }}>
-                {product.ingredientsText}
-              </p>
-            </details>
-          )}
-
-          <p style={{ marginTop: 14, fontSize: 12, opacity: 0.7, lineHeight: 1.4 }}>
-            Data: Open Food Facts · Score is an estimate, not medical advice.
-          </p>
+              <div className="fs-footnote">
+                Data: Open Food Facts · Score is an estimate, not medical advice.
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* History */}
       {history.length > 0 && (
-        <div
-          style={{
-            marginTop: 16,
-            padding: 16,
-            borderRadius: 16,
-            border: "1px solid #ddd",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-            <h3 style={{ margin: 0 }}>Recent scans</h3>
-            <button
-              onClick={() => setHistory([])}
-              style={{
-                border: "1px solid rgba(0,0,0,0.2)",
-                background: "transparent",
-                borderRadius: 10,
-                padding: "8px 10px",
-                fontWeight: 700,
-              }}
-            >
+        <div className="fs-card fs-card-pad" style={{ marginTop: 14 }}>
+          <div className="fs-row" style={{ justifyContent: "space-between" }}>
+            <h3 className="fs-sectionTitle">Recent scans</h3>
+            <button className="fs-btn" style={{ width: "auto", padding: "10px 12px" }} onClick={() => setHistory([])}>
               Clear
             </button>
           </div>
 
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+          <div className="fs-historyList">
             {history.map((h) => (
               <button
                 key={h.barcode}
+                className="fs-historyItem"
                 onClick={() => {
                   setBarcode(h.barcode);
                   lookup(h.barcode);
                 }}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "52px 1fr auto",
-                  alignItems: "center",
-                  gap: 10,
-                  textAlign: "left",
-                  border: "1px solid rgba(0,0,0,0.15)",
-                  background: "transparent",
-                  borderRadius: 14,
-                  padding: 10,
-                }}
               >
-                <div
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 12,
-                    overflow: "hidden",
-                    background: "rgba(0,0,0,0.06)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 800,
-                    opacity: 0.8,
-                  }}
-                >
-                  {h.imageUrl ? (
-                    <img
-                      src={h.imageUrl}
-                      alt=""
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    "—"
-                  )}
+                <div className="fs-historyThumb">
+                  {h.imageUrl ? <img src={h.imageUrl} alt="" /> : null}
                 </div>
 
                 <div style={{ minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {h.name ?? "Unknown product"}
-                  </div>
-                  <div style={{ opacity: 0.7, fontSize: 13 }}>
-                    {h.brands ?? "Unknown brand"} · {h.barcode}
+                  <div className="fs-historyName">{h.name ?? "Unknown product"}</div>
+                  <div className="fs-historySub">
+                    {(h.brands ?? "Unknown brand") + " · " + h.barcode}
                   </div>
                 </div>
 
-                <div style={{ textAlign: "right", fontWeight: 900, fontSize: 18 }}>
-                  {h.score ?? "—"}
-                </div>
+                <div className="fs-historyScore">{h.score ?? "—"}</div>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* ✅ Scanner overlay */}
       {scanning && (
         <Scanner
           onDetected={(code) => {
-            // Keep digits only (barcodes)
             const digitsOnly = code.replace(/\D/g, "");
             if (digitsOnly.length === 0) return;
 
-            // Tiny “success” haptic (mobile only)
-            try {
-              navigator.vibrate?.(50);
-            } catch {}
+            try { navigator.vibrate?.(50); } catch {}
 
             setBarcode(digitsOnly);
             setScanning(false);
