@@ -31,3 +31,9 @@ ml/data/off_nova.parquet
 ml/data/openfoodfacts-products.jsonl.gz
 ml/data/*.parquet
 ml/data/*.gz
+
+# Local training data (too large for GitHub)
+ml/data/off_nova.parquet
+ml/data/openfoodfacts-products.jsonl.gz
+ml/data/*.parquet
+ml/data/*.gz
