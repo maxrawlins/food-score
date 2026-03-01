@@ -1,0 +1,21 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Wallington",
+			"country": {
+				"code": "GB",
+				"name": "United Kingdom"
+			},
+			"subdivision": {
+				"code": "ENG",
+				"name": "England"
+			},
+			"timezone": "Europe/London",
+			"latitude": 51.3478,
+			"longitude": -0.1469,
+			"postalCode": "SM6"
+		},
+		"timestamp": 1772371105321
+	},
+	"liveTunnelSlug": "e9e8102b"
+}
