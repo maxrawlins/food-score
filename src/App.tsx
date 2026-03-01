@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import Scanner from "./Scanner";
 
@@ -54,37 +54,20 @@ function confidenceLabel(c: Confidence | null | undefined) {
 }
 
 function scoreInfo(score: number | null) {
-  if (score === null) return { color: "#888", label: "Unknown", glow: "rgba(255,255,255,0.2)" };
-  if (score <= 25) return { color: "#16a34a", label: "Minimally processed", glow: "rgba(34,197,94,0.35)" };
-  if (score <= 50) return { color: "#ca8a04", label: "Moderately processed", glow: "rgba(250,204,21,0.30)" };
-  if (score <= 75) return { color: "#ea580c", label: "Processed", glow: "rgba(249,115,22,0.32)" };
-  return { color: "#dc2626", label: "Ultra processed", glow: "rgba(239,68,68,0.32)" };
+  if (score === null) return { color: "#9ca3af", label: "Unknown", glow: "rgba(255,255,255,0.18)" };
+  if (score <= 25) return { color: "#22c55e", label: "Minimally processed", glow: "rgba(34,197,94,0.30)" };
+  if (score <= 50) return { color: "#facc15", label: "Moderately processed", glow: "rgba(250,204,21,0.26)" };
+  if (score <= 75) return { color: "#fb923c", label: "Processed", glow: "rgba(251,146,60,0.26)" };
+  return { color: "#f87171", label: "Ultra processed", glow: "rgba(248,113,113,0.26)" };
 }
 
-function formatFacts(p: Product) {
-  const items: Array<{ k: string; v: string }> = [];
-
-  // Avoid duplicates: show additives OR ingredients count if available, both are useful but not repeated elsewhere
-  items.push({
-    k: "Additives",
-    v: String(p.additivesCount),
-  });
-
-  if (p.ingredientCount != null) {
-    items.push({
-      k: "Ingredients",
-      v: `~${p.ingredientCount}`,
-    });
-  }
-
-  if (p.brands) {
-    items.push({
-      k: "Brand",
-      v: p.brands,
-    });
-  }
-
-  return items;
+function chip(label: string, value: string) {
+  return (
+    <div className="fs-chip" key={label}>
+      <div className="fs-chipK">{label}</div>
+      <div className="fs-chipV">{value}</div>
+    </div>
+  );
 }
 
 export default function App() {
@@ -93,6 +76,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [history, setHistory] = useState<HistoryItem[]>(() => loadHistory());
 
@@ -107,6 +92,19 @@ export default function App() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Unknown error");
     return data as Product;
+  }
+
+  function releaseMobileScrollLock() {
+    // ✅ iOS Safari: blur input then scroll to top
+    try {
+      (document.activeElement as HTMLElement | null)?.blur?.();
+      inputRef.current?.blur();
+    } catch {}
+
+    // Do it on next frame so layout has settled
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    });
   }
 
   async function lookup(barcodeOverride?: string) {
@@ -131,16 +129,15 @@ export default function App() {
         scannedAt: Date.now(),
       };
 
-      setHistory((prev) => {
-        const next = [newItem, ...prev.filter((h) => h.barcode !== newItem.barcode)].slice(
-          0,
-          HISTORY_LIMIT
-        );
-        return next;
-      });
+      setHistory((prev) =>
+        [newItem, ...prev.filter((h) => h.barcode !== newItem.barcode)].slice(0, HISTORY_LIMIT)
+      );
+
+      releaseMobileScrollLock();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);
+      releaseMobileScrollLock();
     } finally {
       setLoading(false);
     }
@@ -158,11 +155,17 @@ export default function App() {
     return null;
   }, [product]);
 
-  const facts = useMemo(() => (product ? formatFacts(product) : []), [product]);
+const chips = useMemo(() => {
+  if (!product) return [];
+  const list = [];
+  list.push(chip("Additives", String(product.additivesCount)));
+  if (product.ingredientCount != null) list.push(chip("Ingredients", `~${product.ingredientCount}`));
+  if (product.brands) list.push(chip("Brand", product.brands));
+  return list;
+}, [product]);
 
   return (
     <div className="fs-wrap">
-      {/* ✅ Simple top-left page title */}
       <header className="fs-header">
         <h1 className="fs-pageTitle">Food Score</h1>
         <p className="fs-pageSubtitle">Scan or type a barcode to score processing.</p>
@@ -171,17 +174,12 @@ export default function App() {
       <div className="fs-card fs-card-pad">
         <div className="fs-actions">
           <button className="fs-btn" onClick={() => setScanning(true)}>
-            <svg className="fs-icon" viewBox="0 0 24 24" fill="none">
-              <path d="M7 3H5a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M17 3h2a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M17 21h2a2 2 0 0 0 2-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M4 12h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
-            </svg>
+            <span className="fs-btnIcon">⌁</span>
             Scan barcode
           </button>
 
           <input
+            ref={inputRef}
             className="fs-input"
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
@@ -202,39 +200,27 @@ export default function App() {
 
       {product && (
         <div className="fs-card fs-card-pad fs-resultCard">
-          <div className="fs-resultHeader">
-            {/* ✅ Left: score + label */}
-            <div className="fs-scoreWrap">
-              <div
-                className="fs-score fs-glow"
-                style={
-                  {
-                    color: scoreMeta.color,
-                    ["--glow" as any]: scoreMeta.glow,
-                  } as React.CSSProperties
-                }
-              >
-                {scoreDisplay ?? "—"}
-              </div>
-
-              <div className="fs-scoreMeta">
-                <div className="fs-label">{scoreMeta.label}</div>
-                <div className="fs-conf">{confidenceLabel(product.confidence)} confidence</div>
-              </div>
+          <div className="fs-scoreBlock">
+            <div
+              className="fs-score fs-glow"
+              style={
+                {
+                  color: scoreMeta.color,
+                  ["--glow" as any]: scoreMeta.glow,
+                } as React.CSSProperties
+              }
+            >
+              {scoreDisplay ?? "—"}
             </div>
 
-            {/* ✅ Right: small facts grid (no duplicates, better placement) */}
-            <div className="fs-facts">
-              {facts.map((f) => (
-                <div key={f.k} className="fs-fact">
-                  <div className="fs-factKey">{f.k}</div>
-                  <div className="fs-factVal">{f.v}</div>
-                </div>
-              ))}
+            <div className="fs-scoreText">
+              <div className="fs-label">{scoreMeta.label}</div>
+              <div className="fs-conf">{confidenceLabel(product.confidence)} confidence</div>
             </div>
           </div>
 
-          {/* Reasons */}
+          <div className="fs-chipRow">{chips}</div>
+
           {reasons ? (
             <ul className="fs-reasons">
               {reasons.map((r) => (
@@ -253,7 +239,6 @@ export default function App() {
             <div>
               <div className="fs-prodName">{product.name ?? "Unknown product"}</div>
               <div className="fs-prodMeta">
-                {/* ✅ no duplicate "Additives" here now */}
                 <div><b>Barcode:</b> {product.barcode}</div>
               </div>
 
@@ -277,8 +262,7 @@ export default function App() {
           <div className="fs-row" style={{ justifyContent: "space-between" }}>
             <h3 className="fs-sectionTitle">Recent scans</h3>
             <button
-              className="fs-btn"
-              style={{ width: "auto", padding: "10px 12px" }}
+              className="fs-btn fs-btnSmall"
               onClick={() => setHistory([])}
             >
               Clear
