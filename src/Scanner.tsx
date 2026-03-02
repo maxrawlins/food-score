@@ -45,9 +45,10 @@ export default function Scanner({
         );
 
         controlsRef.current = controls;
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : null;
         setError(
-          e?.message ||
+          message ||
             "Could not access camera. Check permissions or use manual entry."
         );
       }
@@ -67,7 +68,8 @@ export default function Scanner({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.92)",
+        background:
+          "radial-gradient(900px 650px at -10% -10%, rgba(96,155,102,0.34), transparent 60%), rgba(12,22,16,0.94)",
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
         padding: `calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom))`,
@@ -75,7 +77,7 @@ export default function Scanner({
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ color: "white", fontWeight: 900 }}>Scan barcode</div>
+        <div style={{ color: "#ecf9ef", fontWeight: 900, letterSpacing: "-0.01em", fontSize: "1.05rem" }}>Scan barcode</div>
 
         <button
           onClick={() => {
@@ -85,10 +87,11 @@ export default function Scanner({
           style={{
             borderRadius: 14,
             padding: "10px 12px",
-            border: "1px solid rgba(255,255,255,0.28)",
-            background: "rgba(255,255,255,0.06)",
-            color: "white",
+            border: "1px solid rgba(204,230,208,0.52)",
+            background: "rgba(60,117,72,0.35)",
+            color: "#effbef",
             fontWeight: 900,
+            backdropFilter: "blur(2px)",
           }}
         >
           Close
@@ -103,13 +106,14 @@ export default function Scanner({
             maxWidth: 520,
             borderRadius: 18,
             background: "black",
-            border: "1px solid rgba(255,255,255,0.12)",
+            border: "1px solid rgba(190,230,194,0.35)",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.32)",
           }}
         />
       </div>
 
       {error && (
-        <div style={{ color: "#ffb4b4", fontWeight: 800 }}>
+        <div style={{ color: "#ffc7c7", fontWeight: 800 }}>
           {error}
         </div>
       )}

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../../../../../Users/maxrawlins/Documents/solo projects/food score/netlify/functions/hello.ts"],
-  "sourceRoot": "/private/var/folders/vv/22r2skb97k17hp4s8dghlq5h0000gn/T/tmp-16152-nNkjwgX74eCy",
+  "sourceRoot": "/private/var/folders/vv/22r2skb97k17hp4s8dghlq5h0000gn/T/tmp-14610-KiOH1103QWL6",
   "sourcesContent": ["import type { Handler } from \"@netlify/functions\";\n\nexport const handler: Handler = async () => {\n  return {\n    statusCode: 200,\n    headers: { \"content-type\": \"application/json\" },\n    body: JSON.stringify({ ok: true, message: \"Hello from Food Score \uD83D\uDC4B\" }),\n  };\n};"],
   "mappings": ";;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEO,IAAM,UAAmB,YAAY;AAC1C,SAAO;AAAA,IACL,YAAY;AAAA,IACZ,SAAS,EAAE,gBAAgB,mBAAmB;AAAA,IAC9C,MAAM,KAAK,UAAU,EAAE,IAAI,MAAM,SAAS,kCAA2B,CAAC;AAAA,EACxE;AACF;",
   "names": []
